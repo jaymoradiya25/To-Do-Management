@@ -21,7 +21,7 @@ const start = async () => {
     connect();
     startReminderJob();
     app.get("/", (req, res) => {
-        return res.status(200).send("Express server is runnig")
+        return res.status(200).send("Welcome to the TO-DO Management")
     });
 
     app.use("/api", indexRoute);

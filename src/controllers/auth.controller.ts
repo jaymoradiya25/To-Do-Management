@@ -5,6 +5,7 @@ import { hashPassword, comparePassword } from "../helpers/validation";
 
 export const signUp = async (req: Request, res: Response) => {
     try {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
         let { userName, password, email } = req.body
         if (!userName || !password || !email) return res.status(400).send({ code: 400, error: "All field are mandatory" })
@@ -12,14 +13,18 @@ export const signUp = async (req: Request, res: Response) => {
         let existUser = await UserModel.findOne({ userName: userName });
         if (existUser) return res.status(409).send({ code: 409, error: "Username already exist" })
 
+        if (!emailRegex.test(email)) {
+            return res.status(400).json({ code: 400, error: 'Invalid email format' });
+        }
+
         let hashPass = await hashPassword(password)
         let newUser = await UserModel.create({ userName: userName, email: email, password: hashPass })
-        let token = await generateToken({ _id: newUser._id, email: newUser.email, userName: newUser.userName })
 
+        let token = await generateToken({ _id: newUser._id, email: newUser.email, userName: newUser.userName })
         return res.status(201).send({ code: 201, message: "Sign Up success", token })
     } catch (error) {
         console.log(error);
-        return res.status(500).send({ code: 500, message: "Error in Sign Up", error: error })
+        return res.status(500).send({ code: 500, message: "Error retrieving Sign Up", error: error })
     }
 }
 
@@ -38,8 +43,8 @@ export const signIn = async (req: Request, res: Response) => {
 
         let token = await generateToken({ _id: existUser._id, email: existUser.email, userName: existUser.userName });
         return res.status(200).send({ code: 200, message: "Sign In success", token })
-
+    
     } catch (error) {
-        return res.status(500).send({ code: 500, message: "Error in Sign In", error })
+        return res.status(500).send({ code: 500, message: "Error retrieving Sign In", error })
     }
 }

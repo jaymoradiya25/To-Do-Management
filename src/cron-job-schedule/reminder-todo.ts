@@ -16,7 +16,7 @@ export const startReminderJob = () => {
       reminderTime: { $lte: now },
       isCompleted: false,
       reminderSent: { $ne: true }
-    }).populate("addedBy"); // get user info
+    }).populate("addedBy");
 
     for (const todo of todos) {
       const user = todo.addedBy as any;
@@ -25,10 +25,9 @@ export const startReminderJob = () => {
         await sendReminder(
           user.email,
           `Todo Reminder: ${todo.title}`,
-          `Hi ${user.username},\n\nThis is a reminder for your task: "${todo.title}".\nDue Date: ${todo.dueDate}`
+          `Hi ${user.userName},\n\nThis is a reminder for your task: "${todo.title}".\nDue Date: ${todo.dueDate}`
         );
 
-        // Mark reminder as sent without using save()
         await ToDoModel.updateOne(
           { _id: todo._id },
           { $set: { reminderSent: true } }
@@ -37,5 +36,4 @@ export const startReminderJob = () => {
 
     }
   });
-
 }
